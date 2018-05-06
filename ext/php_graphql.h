@@ -14,7 +14,7 @@
 #define PHP_GRAPHQL_VERSION     "0.0.1"
 #define PHP_GRAPHQL_EXTNAME     "graphql"
 #define PHP_GRAPHQL_AUTHOR      ""
-#define PHP_GRAPHQL_ZEPVERSION  "0.10.9-a9589700c9"
+#define PHP_GRAPHQL_ZEPVERSION  "0.10.7-8059e66568"
 #define PHP_GRAPHQL_DESCRIPTION ""
 
 
@@ -42,10 +42,6 @@ ZEND_BEGIN_MODULE_GLOBALS(graphql)
 	/* Max recursion control */
 	unsigned int recursive_lock;
 
-	/* Global constants */
-	zval *global_true;
-	zval *global_false;
-	zval *global_null;
 	
 ZEND_END_MODULE_GLOBALS(graphql)
 
@@ -56,13 +52,14 @@ ZEND_END_MODULE_GLOBALS(graphql)
 ZEND_EXTERN_MODULE_GLOBALS(graphql)
 
 #ifdef ZTS
-	#define ZEPHIR_GLOBAL(v) TSRMG(graphql_globals_id, zend_graphql_globals *, v)
+	#define ZEPHIR_GLOBAL(v) ZEND_MODULE_GLOBALS_ACCESSOR(graphql, v)
 #else
 	#define ZEPHIR_GLOBAL(v) (graphql_globals.v)
 #endif
 
 #ifdef ZTS
-	#define ZEPHIR_VGLOBAL ((zend_graphql_globals *) (*((void ***) tsrm_ls))[TSRM_UNSHUFFLE_RSRC_ID(graphql_globals_id)])
+	void ***tsrm_ls;
+	#define ZEPHIR_VGLOBAL ((zend_graphql_globals *) (*((void ***) tsrm_get_ls_cache()))[TSRM_UNSHUFFLE_RSRC_ID(graphql_globals_id)])
 #else
 	#define ZEPHIR_VGLOBAL &(graphql_globals)
 #endif

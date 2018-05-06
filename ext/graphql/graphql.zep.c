@@ -24,9 +24,10 @@ ZEPHIR_INIT_CLASS(GraphQL_GraphQL) {
 
 PHP_METHOD(GraphQL_GraphQL, version) {
 
-	
+	zval *this_ptr = getThis();
 
-	RETURN_STRING("1.0", 1);
+
+	RETURN_STRING("1.0");
 
 }
 

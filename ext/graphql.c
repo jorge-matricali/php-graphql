@@ -7,11 +7,6 @@
 
 #include <php.h>
 
-// TODO: Deprecated. Will be removed in future
-#if PHP_VERSION_ID < 50500
-#include <locale.h>
-#endif
-
 #include "php_ext.h"
 #include "graphql.h"
 
@@ -28,6 +23,7 @@
 
 
 
+zend_class_entry *graphql_error_error_ce;
 zend_class_entry *graphql_graphql_ce;
 
 ZEND_DECLARE_MODULE_GLOBALS(graphql)
@@ -38,37 +34,16 @@ PHP_INI_END()
 
 static PHP_MINIT_FUNCTION(graphql)
 {
-// TODO: Deprecated. Will be removed in future
-#if PHP_VERSION_ID < 50500
-	char* old_lc_all = setlocale(LC_ALL, NULL);
-	if (old_lc_all) {
-		size_t len = strlen(old_lc_all);
-		char *tmp  = calloc(len+1, 1);
-		if (UNEXPECTED(!tmp)) {
-			return FAILURE;
-		}
-
-		memcpy(tmp, old_lc_all, len);
-		old_lc_all = tmp;
-	}
-
-	setlocale(LC_ALL, "C");
-#endif
 	REGISTER_INI_ENTRIES();
+	zephir_module_init();
+	ZEPHIR_INIT(GraphQL_Error_Error);
 	ZEPHIR_INIT(GraphQL_GraphQL);
-
-// TODO: Deprecated. Will be removed in future
-#if PHP_VERSION_ID < 50500
-	setlocale(LC_ALL, old_lc_all);
-	free(old_lc_all);
-#endif
 	return SUCCESS;
 }
 
 #ifndef ZEPHIR_RELEASE
 static PHP_MSHUTDOWN_FUNCTION(graphql)
 {
-
 	zephir_deinitialize_memory(TSRMLS_C);
 	UNREGISTER_INI_ENTRIES();
 	return SUCCESS;
@@ -111,11 +86,13 @@ static void php_zephir_init_module_globals(zend_graphql_globals *graphql_globals
 static PHP_RINIT_FUNCTION(graphql)
 {
 
-	zend_graphql_globals *graphql_globals_ptr = ZEPHIR_VGLOBAL;
+	zend_graphql_globals *graphql_globals_ptr;
+#ifdef ZTS
+	tsrm_ls = ts_resource(0);
+#endif
+	graphql_globals_ptr = ZEPHIR_VGLOBAL;
 
 	php_zephir_init_globals(graphql_globals_ptr TSRMLS_CC);
-	//zephir_init_interned_strings(TSRMLS_C);
-
 	zephir_initialize_memory(graphql_globals_ptr TSRMLS_CC);
 
 
@@ -124,9 +101,7 @@ static PHP_RINIT_FUNCTION(graphql)
 
 static PHP_RSHUTDOWN_FUNCTION(graphql)
 {
-
 	
-
 	zephir_deinitialize_memory(TSRMLS_C);
 	return SUCCESS;
 }
